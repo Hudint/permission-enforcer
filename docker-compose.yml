@@ -1,0 +1,11 @@
+services:
+  permission-enforcer:
+    build: .
+    container_name: permission-enforcer
+    restart: unless-stopped
+    environment:
+      - WATCH_DIR=/data
+      - TARGET_UID=1000
+      - TARGET_GID=1000
+    volumes:
+      - ./dir/to/watch:/data
