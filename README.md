@@ -65,6 +65,58 @@ services:
       - /path/to/your/directory:/data
 ```
 
+## Excluding Paths
+
+You can exclude specific paths or filename patterns from both the initial scan and the live watcher using the `EXCLUDE_PATTERNS` environment variable.
+
+`EXCLUDE_PATTERNS` accepts a **colon-separated list** of shell glob patterns. Any file or directory whose path matches one of the patterns will be skipped entirely — no `chown` or `chmod` will be applied.
+
+### Examples
+
+Exclude a specific directory:
+```
+EXCLUDE_PATTERNS=/data/logs
+```
+
+Exclude multiple patterns:
+```
+EXCLUDE_PATTERNS=/data/logs:/data/tmp/*:/data/cache
+```
+
+Exclude SQLite journal and WAL files (useful for live databases):
+```
+EXCLUDE_PATTERNS=/data/db/*.sqlite-journal:/data/db/*.sqlite-wal
+```
+
+### In Docker Compose
+
+```yaml
+services:
+  permission-enforcer:
+    image: ghcr.io/hudint/permission-enforcer:latest
+    environment:
+      - TARGET_UID=1000
+      - TARGET_GID=1000
+      - EXCLUDE_PATTERNS=/data/db/*.sqlite-journal:/data/tmp/*
+    volumes:
+      - /path/to/your/directory:/data
+```
+
+### Pattern Syntax
+
+Patterns use standard POSIX shell glob matching:
+
+| Pattern | Matches |
+|---|---|
+| `/data/logs` | Exactly `/data/logs` |
+| `/data/tmp/*` | All files directly inside `/data/tmp/` |
+| `/data/**` | Not supported — use `/data/subdir/*` per level |
+| `*.sqlite-journal` | Only if the full path matches (anchored to root) |
+
+> **Note:** Patterns are matched against the full absolute path of each file. Always use the full path as it appears inside the container (e.g. `/data/...`).
+
+---
+
 ## inotify Limits
 
 The Linux kernel limits the number of inotify watches per user. Each subdirectory in the watched tree consumes one watch. If your directory tree is large, you may hit the default limit.

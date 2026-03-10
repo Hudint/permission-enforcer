@@ -1,11 +1,13 @@
 services:
   permission-enforcer:
-    build: .
+    image: ghcr.io/hudint/permission-enforcer:latest
     container_name: permission-enforcer
     restart: unless-stopped
     environment:
       - WATCH_DIR=/data
       - TARGET_UID=1000
       - TARGET_GID=1000
+      # - TARGET_PERMISSIONS=755
+      # - EXCLUDE_PATTERNS=/data/logs:/data/tmp/*
     volumes:
       - ./dir/to/watch:/data
